@@ -1,0 +1,87 @@
+- name: Installing webapp-server
+  hosts: web-server
+  become: yes
+
+  vars:
+    webapp_user: webapp-server
+    webapp_group: webapp-server
+
+    webapp_url: https://playpit-labs-assets.s3-eu-west-1.amazonaws.com/webapp-server/webapp-server
+    webapp_home: /opt/webapp-server
+    webapp_port: 8080
+
+    student_first_name: aliaksandr
+    student_last_name: mukhitdzinau
+
+  tasks:
+  - name: Create group "webapp-server"
+    group:
+      name: "{{ webapp_group  }}"
+
+  - name: Create user "webapp-server"
+    user:
+      name: "{{ webapp_user }}"
+      group: "{{ webapp_group }}"
+      home: "{{ webapp_home }}"
+      createhome: no
+
+  - name: Create target binary directory
+    file: 
+      path: "{{ webapp_home }}/bin"
+      state: directory
+      owner: "{{ webapp_user }}"
+      group: "{{ webapp_group }}"
+      mode: "0755"
+
+  - name: Create target conf directory
+    file:
+      path: "{{ webapp_home }}/conf"
+      state: directory
+      owner: "{{ webapp_user }}"
+      group: "{{ webapp_group }}"
+      mode: "0755"
+
+  - name: Download webapp-server
+    get_url:
+      url: "{{ webapp_url }}"
+      dest: "{{ webapp_home }}/bin"
+      checksum: "md5:66e5a7366408e9db471e3e9586e01708"
+      owner: "{{ webapp_user }}"
+      mode: "u+x"
+
+  - name: Symlink install directory
+    file:
+      src: "{{ webapp_home }}"
+      path: /etc/webapp-server
+      state: link
+
+  - name: Copy Users Configuration
+    template:
+      src: webapp-server.conf.j2
+      dest: "{{ webapp_home }}/conf/webapp-server.conf"
+      owner: "{{ webapp_user }}"
+      group: "{{ webapp_group }}"
+    notify: webapp-server restart
+
+  - name: Copy webapp-server Service File
+    template:
+      src: webapp-server.service.j2
+      dest: /usr/lib/systemd/system/webapp-server.service
+
+  - name: Ensure webapp-server Service Enabled and Running
+    systemd:
+      name: webapp-server
+      state: started
+      enabled: yes
+
+  - name: Waiting some time for webserver become available
+    wait_for:
+      port: "{{ webapp_port }}"
+      delay: 10
+
+  handlers:
+  - name: webapp-server restart
+    systemd:
+      name: webapp-server
+      state: restarted
+

@@ -1,0 +1,6 @@
+---
+- hosts: all
+  gather_facts: true
+  fact_path: "{{ facts_folder }}"
+  roles:
+    - base

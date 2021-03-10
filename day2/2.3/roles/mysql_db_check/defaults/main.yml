@@ -1,0 +1,6 @@
+---
+mysqldb_check_user: mysqldb-check
+mysqldb_check_group: "{{ mysqldb_check_user }}"
+mysqldb_check_home: /opt/mysqldb-check
+mysqldb_check_port: 8081
+mysqldb_check_bin_url: https://playpit-labs-assets.s3-eu-west-1.amazonaws.com/mysql-check/mysql-check 

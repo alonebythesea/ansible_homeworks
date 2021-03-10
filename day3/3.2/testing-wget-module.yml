@@ -1,0 +1,16 @@
+- hosts: all
+  connection: local
+
+  vars:
+    tomcat_version: 8.5.58
+
+  tasks:
+    - name: Download Tomcat Archive
+      wget:
+        src: "{{ tomcat_version | tomcat_url }}"
+        dest: /opt
+        chksum: "{{ tomcat_version | tomcat_checksum }}"
+        group: vagrant
+        owner: vagrant
+        mode: 0755
+      become: true

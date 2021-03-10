@@ -1,0 +1,90 @@
+- name: Installing Tomcat
+  hosts: app-server
+  become: yes
+
+  vars:
+    tomcat_user: tomcat
+    tomcat_group: tomcat
+
+    tomcat_version: 8.5.58
+    tomcat_version_major: "{{ tomcat_version.split('.')[0] }}"
+
+    tomcat_url: https://archive.apache.org/dist/tomcat/tomcat-{{ tomcat_version_major }}/v{{ tomcat_version }}/bin/apache-tomcat-{{ tomcat_version }}.tar.gz
+    tomcat_home: /usr/share/tomcat
+    tomcat_port: 8080
+
+    tomcat_admin_username: admin
+    tomcat_admin_password: password
+
+  tasks:
+  - name: Install Java 1.8
+    yum: name=java-1.8.0-openjdk state=present
+
+  - name: Create tomcat Group
+    group:
+      name: "{{ tomcat_group  }}"
+
+  - name: Add user "tomcat"
+    user:
+      name: "{{ tomcat_user }}"
+      group: "{{ tomcat_group }}"
+      home: "{{ tomcat_home }}"
+      createhome: no
+
+  - name: Download Tomcat
+    get_url:
+      url: "{{ tomcat_url }}"
+      dest: /opt/apache-tomcat-{{ tomcat_version }}.tar.gz
+      checksum: "sha512:55d8fa698f7ac118ab33f1be644477fa8424f0fe6eefa80c85acd4e3cbce5f1704ce3cf897dfcd42c5c95cd2ff3b559e774fb5b7ac7279dd6b803a9a2dd8cc8f"
+
+  - name: Unpack Tomcat Archive
+    unarchive:
+      src: /opt/apache-tomcat-{{ tomcat_version }}.tar.gz
+      dest: /opt/
+      remote_src: yes
+      owner: "{{ tomcat_user }}"
+      group: "{{ tomcat_group }}"
+      creates: /opt/apache-tomcat-{{ tomcat_version }}/conf/tomcat-users.xml
+
+  - name: Symlink install directory
+    file:
+      src: /opt/apache-tomcat-{{ tomcat_version }}
+      path: "{{ tomcat_home }}"
+      state: link
+
+  - name: Copy Users Configuration
+    template:
+      src: tomcat-users.xml.j2
+      dest: /opt/apache-tomcat-{{ tomcat_version }}/conf/tomcat-users.xml
+      owner: "{{ tomcat_user }}"
+      group: "{{ tomcat_group }}"
+    notify: tomcat restart
+
+  - name: Disable Manager Access Restrictions
+    replace:
+      path: "{{ tomcat_home }}/webapps/manager/META-INF/context.xml"
+      regexp: (\s\+<)(Valve[^>]*/)>
+      replace: \1!--\2--
+      backup: yes
+
+  - name: Copy Tomcat Service File
+    template:
+      src: tomcat.service.j2
+      dest: /usr/lib/systemd/system/tomcat.service
+
+  - name: Ensure Tomcat Service Enabled and Running
+    systemd:
+      name: tomcat
+      state: started
+      enabled: yes
+
+  - name: Wait for tomcat run
+    wait_for:
+      port: "{{ tomcat_port }}"
+      delay: 10
+
+  handlers:
+  - name: tomcat restart
+    systemd:
+      name: tomcat
+      state: restarted

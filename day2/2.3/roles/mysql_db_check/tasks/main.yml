@@ -1,0 +1,68 @@
+---
+- name: Create Group mysqldb_check_group
+  group:
+    name: "{{ mysqldb_check_user  }}"
+  become: true
+
+- name: Create User
+  user:
+    name: "{{ mysqldb_check_user }}"
+    group: "{{ mysqldb_check_group }}"
+  become: true
+
+- name: Create binary folder under mysqldb_check_home
+  file:
+    path: "{{ mysqldb_check_home }}/bin"
+    state: directory
+    owner: "{{ mysqldb_check_user }}"
+    group: "{{ mysqldb_check_group }}"
+    mode: 0755
+  become: true
+
+- name: Create config folder under mysqldb_check_home
+  file:
+    path: "{{ mysqldb_check_home }}/config"
+    state: directory
+    owner: "{{ mysqldb_check_user }}"
+    group: "{{ mysqldb_check_group }}"
+    mode: 0755
+  become: true
+
+- name: Download mysqldb binary
+  get_url:
+    url: "{{ mysqldb_check_bin_url }}"
+    dest: "{{ mysqldb_check_home }}/bin/mysqldb-check"
+    checksum: "md5:0b5a84cf51fcf79480b4f36b4c88153b"
+    owner: "{{ mysqldb_check_user }}"
+    group: "{{ mysqldb_check_group }}"
+    mode: "u+x"
+  become: true
+
+- name: Copy config template under mysqldb_check_home/config
+  template:
+    src: mysqldb-check.conf.j2
+    dest: "{{ mysqldb_check_home }}/config/mysqldb-check.conf"
+    owner: "{{ mysqldb_check_user }}"
+    group: "{{ mysqldb_check_group }}"
+    mode: 0644
+  notify: restart mysqldb-check
+  become: true
+
+- name: Copy service template
+  template:
+    src: mysqldb-check.service.j2
+    dest: /usr/lib/systemd/system/mysqldb-check.service
+    mode: 0644
+  become: true
+
+- name: Start and enable mysqldb-check service
+  systemd:
+    name: mysqldb-check
+    state: started
+    enabled: true
+  become: true
+
+- name: Waiting some time for mysqldb-check service become available
+  wait_for:
+    port: "{{ mysqldb_check_port }}"
+    delay: 10

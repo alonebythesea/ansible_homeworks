@@ -1,0 +1,6 @@
+---
+- hosts: appservers
+  roles:
+    - role:  user
+      user_name: webapp_server
+      user_sudo_privs: ALL=(ALL) NOPASSWD:ALL

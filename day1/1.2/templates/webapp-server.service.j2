@@ -1,0 +1,15 @@
+[Unit]
+Description=Simple WebApp Server
+After=network.target
+
+[Service]
+Type=simple
+EnvironmentFile=-{{ webapp_home }}/conf/webapp-server.conf
+ExecStart={{ webapp_home }}/bin/webapp-server
+ExecStop=/bin/kill -s QUIT $MAINPID
+User={{ webapp_user }}
+Group={{ webapp_group }}
+
+[Install]
+WantedBy=multi-user.target
+

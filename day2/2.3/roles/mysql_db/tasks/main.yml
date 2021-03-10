@@ -1,0 +1,60 @@
+---
+- name: Install MySQL repo
+  yum:
+    name: "https://repo.mysql.com/mysql80-community-release-{{ platform }}-{{ mysql_version }}.noarch.rpm"
+    state: present
+    disable_gpg_check: true
+  become: true
+
+- name: Update pip
+  pip:
+    name: pip
+    version: 20.3
+    executable: pip
+  become: true
+
+- name: Install setuptools for pip
+  pip:
+    name: setuptools
+    version: 8.0.1
+    executable: pip
+  become: true
+
+- name: Install PyMySQL module
+  pip:
+    name: pymysql
+    executable: pip
+  become: true
+
+- name: Enable MySQL repo
+  yum:
+    enablerepo: mysql80-community
+  become: true
+
+- name: Install MySQL Server
+  yum:
+    name: mysql-server
+    state: installed
+  become: true
+  register: reinstallation
+
+- name: Run mysqld command
+  command: mysqld --initialize-insecure --user=mysql
+  become: true
+  when: reinstallation.changed
+
+- name: Enable mysql service
+  systemd:
+    name: mysqld
+    state: started
+    enabled: true
+  become: true
+
+- name: Set password to defaults root
+  mysql_user:
+    name: root
+    host: localhost
+    password: "{{ mysqldb_root_password }}"
+    check_implicit_admin: true
+    state: present
+  become: true

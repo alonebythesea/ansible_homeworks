@@ -1,0 +1,10 @@
+---
+- hosts: dbservers
+  roles:
+  - role: mysql_db
+    platform: el7
+    mysql_version: 3
+    mysqldb_root_password: root
+  - role: mysql_db_user
+
+

@@ -1,0 +1,69 @@
+- hosts: localhost
+  gather_facts: no
+
+  vars:
+    student_name: Mickey Mouse
+    random_value: "{{ range(1,101)|random }}" # random number 1..100 (not 0..99!)
+
+    profile:
+      firstname: Joe
+      lastname: Doe
+      age: 32
+      skills:
+        - Ansible
+        - Docker
+        - Kubernetes
+
+  tasks:
+    - name: Should be "mickey mouse"
+      debug: msg="{{ student_name | lower }}"
+
+    - name: Should be "Name - Mickey, Surname - Mouse"
+      debug: msg="Name - {{ student_name.split(' ').0 }}, Surname - {{ student_name.split(' ').1 }}"
+
+    - name: Should be "Mickey MOUSE"
+      debug: msg="{{ student_name.split(' ').0 }} {{ student_name.split(' ').1|upper }}"
+
+    - name: Should be "Minnie Mouse"
+      debug: msg="{{ student_name|replace("Mickey", "Minnie") }}"
+
+    - name: Testcase with assert module and random_value
+      assert:
+        that:
+          - '{{ random_value }} <= 100'
+          - '{{ random_value }} >= 1'
+        msg: "'random_value' must be between 1 and 100"
+
+    - name: Save profile variable in Json file (one line)
+      copy:
+        content: "{{ profile|to_json }}"
+        dest: profile.json
+
+    - name: Should be in Json format (one line)
+      debug: msg="{{ profile|to_json }}"
+      register: string_value
+
+    - name: Save profile variable in Json file (multiple lines, indentation)
+      copy:
+        content: "{{ profile|to_nice_json(indent=8) }}"
+        dest: profile_pretty.json
+
+    - name: Should be in Json format (multiple lines, indentation)
+      debug: msg="{{ profile|to_nice_json(indent=8) }}"
+
+    - name: Create dict variable from string value
+      set_fact: nearly_created="{{ string_value.msg|from_json }}"
+
+    - name: Testcase with assert module and nearly_created variable
+      assert:
+        that:
+          - 'nearly_created.firstname == "{{ nearly_created.firstname }}"'
+          - 'nearly_created.lastname == "{{ nearly_created.lastname }}"'
+          - 'nearly_created.age == 32'
+
+    - name: Encode with base64 sensitive data
+      debug: msg="{{ 'too sensitive to be plain' | string | b64encode }}"
+
+    - name: Decode Base64 encoded string
+      debug: msg="{{ 'QWxtaWdodHkgQW5zaWJsZSE=' | b64decode }}"
+

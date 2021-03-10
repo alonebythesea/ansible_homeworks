@@ -1,0 +1,5 @@
+---
+webapp_server_group: "{{ webapp_server_user }}"
+webapp_server_port: 8080
+webapp_server_bin_url: https://playpit-labs-assets.s3-eu-west-1.amazonaws.com/webapp-server/webapp-server
+webapp_server_logo_url: https://cf-templates-p1f9r11u6d69-us-west-1.s3-us-west-1.amazonaws.com/dsfsdf.jpg 

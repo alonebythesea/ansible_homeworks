@@ -1,0 +1,8 @@
+---
+user_id: 1515
+user_group: "{{ user_name }}"
+user_gid: "{{ user_id }}"
+user_sudo_privs:
+user_home: "/home/{{ user_name }}"
+user_home_create: true
+user_shell: /bin/sh

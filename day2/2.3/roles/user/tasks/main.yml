@@ -1,0 +1,25 @@
+---
+- name: Create Group
+  group:
+    name: "{{ user_group  }}"
+    gid: "{{ user_gid }}"
+  become: true
+
+- name: Create User
+  user:
+    name: "{{ user_name }}"
+    group: "{{ user_group }}"
+    uid: "{{ user_id }}"
+    home: "{{ user_home }}"
+    createhome: "{{ user_home_create }}"
+    shell: "{{ user_shell }}"
+  become: true
+
+- name: Give sudo privileges to user
+  copy:
+    content: "%{{ user_name }} {{ user_sudo_privs }}"
+    dest: "/etc/sudoers.d/{{ user_name }}"
+    mode: 0440
+    validate: /usr/sbin/visudo -csf %s
+  when: user_sudo_privs
+  become: true

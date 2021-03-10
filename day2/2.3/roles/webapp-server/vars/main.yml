@@ -1,0 +1,4 @@
+---
+webapp_server_user: webapp_server
+webapp_server_home: /opt/webapp-server
+webapp_server_student_name: "{{ student_first_name }} {{ student_last_name }}"

@@ -1,0 +1,41 @@
+- hosts: localhost
+  connection: local
+  gather_facts: no
+
+  tasks:
+    - name: Mandatory Variable should be provided
+      assert:
+        that:
+          - team_name is defined
+          - team_name | length > 0
+        msg: "Please specify 'team_name' variable"
+
+    - name: Pass if team_name is correct
+      fail:
+        msg: team name should correspond to pattern '(fft|ccl|pgwy)-team'
+      when: not team_name | mandatory is match('^(fft|ccl|pgwy)-team$')
+
+    - name: Pass if variables file exists
+      fail:
+        msg: variables file 'vars/users-{{ team_name }}.yml' doesnt exist
+      when: not path is exists
+      vars:
+        path: "vars/users-{{ team_name }}.yml"
+
+    - name: Including Team Vars
+      include_vars: vars/users-{{ team_name | mandatory }}.yml
+
+    - name: Walk through users
+      debug: msg="{{ user.name}} / {{ user.role }} / {{ user.password }}"
+      loop: "{{ tomcat_users }}"
+      loop_control:
+        loop_var: user
+        label: "{{ user.name }}"
+
+    - name: Rendering Templates
+      template:
+        src: tomcat-users.xml.j2
+        dest: tomcat_users-rendered.xml
+      vars:
+        users: "{{ tomcat_users }}"
+

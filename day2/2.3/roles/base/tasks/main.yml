@@ -1,0 +1,43 @@
+---
+- name: Enable epel-release
+  yum:
+    name: epel-release
+    state: installed
+  become: true
+
+- name: Install packages
+  yum:
+    name:
+      - python-devel
+      - python-pip
+      - curl
+      - wget
+      - iproute
+      - sudo
+    state: installed
+  become: true
+
+- name: Create custom directory for facts
+  file:
+    path: "{{ facts_folder }}"
+    state: directory
+    recurse: true
+    mode: 0644
+  become: true
+
+- name: Ensure that ansible facts folder exists
+  stat:
+    path: "{{ facts_folder }}"
+  register: facts_dir
+
+- name: "Fail if facts folder does not exists"
+  debug:
+    msg: "{{ facts_dir.stat.path }}  is a directory"
+  when: facts_dir.stat.exists
+
+- name: Save facts
+  copy:
+    content: "{{ ansible_facts }}"
+    dest: "{{ facts_folder }}/ansible_facts.fact"
+    mode: 0644
+  become: true

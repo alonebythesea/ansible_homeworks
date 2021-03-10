@@ -1,0 +1,9 @@
+dependencies:
+  - role: java
+    java_version: "{{ java_version }}"
+  - role: user
+    user_name: "{{ user_name }}"
+    user_id: "{{ user_id }}"
+    group_id: "{{ group_id }}"
+    user_home: "{{ user_home }}"
+  - role: base

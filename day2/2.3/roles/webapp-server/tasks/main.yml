@@ -1,0 +1,76 @@
+---
+- name: Create group for webapp-server
+  group:
+    name: "{{ webapp_server_group  }}"
+  become: true
+
+- name: Create user "webapp-server"
+  user:
+    name: "{{ webapp_server_user }}"
+    group: "{{ webapp_server_group }}"
+    home: "{{ webapp_server_home }}"
+    createhome: true
+  become: true
+
+- name: Create target binary directory
+  file:
+    path: "{{ webapp_server_home }}/bin"
+    state: directory
+    owner: "{{ webapp_server_user }}"
+    group: "{{ webapp_server_group }}"
+    mode: "0755"
+  become: true
+
+- name: Create target conf directory
+  file:
+    path: "{{ webapp_server_home }}/conf"
+    state: directory
+    owner: "{{ webapp_server_user }}"
+    group: "{{ webapp_server_group }}"
+    mode: "0755"
+  become: true
+
+- name: Download webapp-server
+  get_url:
+    url: "{{ webapp_server_bin_url }}"
+    dest: "{{ webapp_server_home }}/bin"
+    checksum: "md5:66e5a7366408e9db471e3e9586e01708"
+    owner: "{{ webapp_server_user }}"
+    mode: "u+x"
+  become: true
+
+- name: Symlink install directory
+  file:
+    src: "{{ webapp_server_home }}"
+    path: /etc/webapp-server
+    state: link
+  become: true
+
+- name: Copy Users Configuration
+  template:
+    src: webapp-server.conf.j2
+    dest: "{{ webapp_server_home }}/conf/webapp-server.conf"
+    owner: "{{ webapp_server_user }}"
+    group: "{{ webapp_server_group }}"
+    mode: 0644
+  notify: webapp-server restart
+  become: true
+
+- name: Copy webapp-server Service File
+  template:
+    src: webapp-server.service.j2
+    dest: /usr/lib/systemd/system/webapp-server.service
+    mode: 0644
+  become: true
+
+- name: Ensure webapp-server Service Enabled and Running
+  systemd:
+    name: webapp-server
+    state: started
+    enabled: true
+  become: true
+
+- name: Waiting some time for webserver become available
+  wait_for:
+    port: "{{ webapp_server_port }}"
+    delay: 10

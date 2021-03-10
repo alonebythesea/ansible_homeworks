@@ -1,0 +1,13 @@
+- name: Provisioning Web Severs
+  hosts: webservers
+
+  roles:
+  - role: nginx-custom
+    server_name: sbeliakou.playpit.labs
+
+- name: Provisioning App Severs
+  hosts: appservers
+  
+  roles:
+  - role: tomcat
+    tomcat_version: 8.5.54

@@ -1,0 +1,5 @@
+---
+- hosts: appservers
+  roles:
+  - role: mysql_db_check
+    mysqldb_root_password: root

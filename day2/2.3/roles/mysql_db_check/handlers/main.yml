@@ -1,0 +1,7 @@
+---
+- name: restart mysqldb-check
+  systemd:
+    name: mysqldb-check
+    state: started
+    enabled: true
+  become: true

@@ -1,0 +1,5 @@
+---
+mysqldb_root_password: root
+mysqldb_user: mysqldb-check
+mysqldb_password: mysqldb_password
+mysqldb_database: mysql_database

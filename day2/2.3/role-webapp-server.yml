@@ -1,0 +1,9 @@
+---
+- hosts: appservers
+  become: true
+  roles:
+  - role: webapp-server
+    user_name: webapp
+    user_id: 8888
+    student_first_name: aliaksandr
+    student_last_name: mukhitdzinau
