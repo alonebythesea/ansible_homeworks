@@ -10,7 +10,7 @@
         src: "{{ tomcat_version | tomcat_url }}"
         dest: /opt
         chksum: "{{ tomcat_version | tomcat_checksum }}"
-        group: vagrant
-        owner: vagrant
-        mode: 0755
+        group: root
+        owner: root
+        mode: 0600
       become: true

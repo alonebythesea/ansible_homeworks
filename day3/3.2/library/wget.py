@@ -57,31 +57,44 @@ def main():
     owner = module.params["owner"]
     mode = module.params["mode"]
 
+    changed = False
+    tomcat_downloaded = False
+    owner_changed = False
+    group_changed = False
+    mode_changed = False
+
     if fun_get_tomcat(src, dest):
         changed = True
-    else:
-        changed = False
-    
+        tomcat_downloaded = True
+
     if checksum:
         if not fun_check_checksum(filename, checksum):
-            raise Exception("Checksums don't match!")
+            module.fail_json(msg="Checksums don't match!")
+
     if owner:
         if fun_owner(filename, owner):
             changed = True
-        else:
-            changed = False
+            owner_changed = True
+
     if group:
         if fun_group(filename, group):
             changed = True
-        else:
-            changed = False
+            group_changed = True
+
     if mode:
         if fun_mode(filename, mode):
             changed = True
-        else:
-            changed = False
+            mode_changed = True
 
-    module.exit_json(changed=changed)
+    change_state = {
+            'src': mode,
+            'chksum': checksum,
+            'group': group,
+            'owner': owner,
+            'mode': mode
+            }
+
+    module.exit_json(changed=changed, **change_state)
 
 
 def fun_parse_version(src):
@@ -103,10 +116,7 @@ def fun_get_tomcat(src, dest):
     filename = destination + '/apache-tomcat-' + version + '.tar.gz'
     check = os.path.exists(filename)
     if not check:
-        try:
-            urllib.request.urlretrieve(src, filename)
-        except:
-            raise Exception("Enter a valid tomcat version!")
+        urllib.request.urlretrieve(src, filename)
         return True
     else:
         return False
@@ -140,8 +150,8 @@ def fun_group(filename, group):
         grp.getgrnam(group)
         gid = grp.getgrnam(group).gr_gid
         current_group = os.stat(filename).st_gid
-    except:
-        raise Exception("Group does not exist!")
+    except Exception:
+        module.fail_json(msg="Group does not exist!")
     uid = -1
     if current_group == gid:
         return False
@@ -155,8 +165,8 @@ def fun_owner(filename, owner):
         pwd.getpwnam(owner)
         uid = pwd.getpwnam(owner).pw_uid
         current_owner = os.stat(filename).st_uid
-    except:
-        raise Exception("User does not exist!")
+    except Exception:
+        module.fail_json(msg="User does not exist!")
     gid = -1
     if current_owner == uid:
         return False

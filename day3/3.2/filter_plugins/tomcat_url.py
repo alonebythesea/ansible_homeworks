@@ -1,6 +1,9 @@
 #!/usr/bin/python
+
+
 import urllib.request
 from urllib.parse import urlparse
+
 
 class FilterModule(object):
     def filters(self):
@@ -19,14 +22,15 @@ class FilterModule(object):
             if check_url_code == 200:
                 return url
         except Exception:
-            return None
+            return "none"
+
 
     def tomcat_checksum(self, tomcat_version):
         tomcat_major = tomcat_version.split('.')[0]
         url = self.tomcat_url(tomcat_version) 
         checksums = ['md5', 'sha1', 'sha256', 'sha384', 'sha512']
-        if url is None:
-            return None
+        if url == "none":
+            return "none"
         else:
             for i in checksums:
                 try:
@@ -39,10 +43,6 @@ class FilterModule(object):
                         parsed = parse.read()
                         parsed = parsed.decode('utf-8')
                         parsed = valid_checksum + ':' + parsed.split(' ')[0]
+                        return parsed
                 except Exception:
                     continue
-        parse = urllib.request.urlopen(valid_url)
-        parsed = parse.read()
-        parsed = parsed.decode('utf-8')
-        parsed = valid_checksum + ':' + parsed.split(' ')[0]
-        return parsed

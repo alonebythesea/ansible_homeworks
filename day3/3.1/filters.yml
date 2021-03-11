@@ -1,9 +1,9 @@
 - hosts: localhost
-  gather_facts: no
+  gather_facts: true
 
   vars:
     student_name: Mickey Mouse
-    random_value: "{{ range(1,101)|random }}" # random number 1..100 (not 0..99!)
+    random_value: "{{ range(1,101)|random }}"  # random number 1..100 (not 0..99!)
 
     profile:
       firstname: Joe
@@ -66,4 +66,3 @@
 
     - name: Decode Base64 encoded string
       debug: msg="{{ 'QWxtaWdodHkgQW5zaWJsZSE=' | b64decode }}"
-

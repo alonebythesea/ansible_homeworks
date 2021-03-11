@@ -1,14 +1,9 @@
 - hosts: localhost
   
   vars:
-    tomcat_version: 8.5.588
+    tomcat_version: 9.0.277
   
   tasks:
   - debug: msg="{{ tomcat_version | tomcat_url }}"
-    # produces:  https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.27/bin/apache-tomcat-9.0.27.tar.gz
   
   - debug: msg="{{ tomcat_version | tomcat_checksum }}" 
-    # produces: md5:2209cf269a1e73f2fd5f451a3703afbc
-
-
-
