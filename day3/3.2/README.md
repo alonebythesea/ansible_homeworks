@@ -1,4 +1,4 @@
-# Asnible Day 3: Extending Ansible with Custom Filters and Modules
+# Ansible Day 3: Extending Ansible with Custom Filters and Modules
 
 ## 1. Extending Ansible with Custom Filters
 
